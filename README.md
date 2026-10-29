@@ -1,6 +1,6 @@
 # damareco.com
 
-ダマレコ / DamaReco の公式サイト。GitHub Pages（`main` の直下）で https://damareco.com に公開しています。
+ダマレコ / DAMARECO の公式サイト。GitHub Pages（`main` の直下）で https://damareco.com に公開しています。
 
 | ファイル | 内容 |
 | --- | --- |
