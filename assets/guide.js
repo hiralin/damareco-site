@@ -44,7 +44,8 @@ function layoutFor(width, height) {
   const wide = width >= 900 && aspect >= .95;
   if (wide) {
     const V = 4.7, span = V * aspect, home = span * .2;
-    return { wide, V, home, side: Math.min(home + .7, span / 2 - .75), py: .25, tapeY: -1.35, pickY: -1.68, keep: 1.8, peel: .88, gap: .22, fw: .2, fh: .31, pickW: Math.min(3.4, span * .6 - .5) };
+    // The limits on side and pickW keep the phone, the trim frame and its touch mark inside a narrow window.
+    return { wide, V, home, side: Math.min(home + .7, span / 2 - .75), py: .25, tapeY: -1.35, pickY: -1.68, keep: 1.8, peel: .88, gap: .22, fw: .2, fh: .31, pickW: Math.min(3.4, span * .5 - .3) };
   }
   const V = Math.max(5.4, 2.75 / aspect), hw = V * aspect / 2;
   const py = V * .385 - 1.3;
