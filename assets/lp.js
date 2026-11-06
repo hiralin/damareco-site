@@ -26,7 +26,12 @@
 
   // The static tape and steps stay until the stage is ready; .guide already holds the rest of the height, so the swap moves nothing.
   var before = section.querySelector(".tape").previousElementSibling, steps = section.querySelector(".steps");
-  section.style.setProperty("--guide-static", steps.offsetTop + steps.offsetHeight - before.offsetTop - before.offsetHeight + "px");
+  var reserve = function () {
+    if (section.classList.contains("guide-ready")) return;
+    section.style.setProperty("--guide-static", steps.offsetTop + steps.offsetHeight - before.offsetTop - before.offsetHeight + "px");
+  };
+  reserve();
+  window.addEventListener("resize", reserve, { passive: true });
   section.classList.add("guide-on");
 
   var stage = null;
