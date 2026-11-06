@@ -51,6 +51,16 @@ function layoutFor(width, height) {
 }
 
 export async function start(section, off) {
+  const live = () => section.classList.contains("guide-on");
+
+  // Real screens: a missing one rejects, which restores the static section.
+  const lang = document.documentElement.lang === "en" ? "en" : "ja";
+  const scale = Math.min(window.devicePixelRatio || 1, 2);
+  const size = Math.min(innerWidth, innerHeight) * .46 * scale <= 400 ? 360 : 720;
+  const loader = new THREE.TextureLoader();
+  const textures = await Promise.all(Object.values(IMAGES).map((name) => loader.loadAsync(new URL(`img/screens/${lang}/${name}-${size}.webp`, import.meta.url).href)));
+  if (!live()) return null;
+
   const guide = section.querySelector(".guide");
   const stage = guide.querySelector(".guide-stage");
   const canvas = guide.querySelector(".guide-canvas");
@@ -88,13 +98,9 @@ export async function start(section, off) {
   const uv = screenGeo.attributes.uv, pos = screenGeo.attributes.position;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, pos.getX(i) / SCREEN_W + .5, pos.getY(i) / SCREEN_H + .5);
 
-  const lang = document.documentElement.lang === "en" ? "en" : "ja";
-  const scale = Math.min(window.devicePixelRatio || 1, 2);
-  const size = Math.min(innerWidth, innerHeight) * .46 * scale <= 400 ? 360 : 720;
-  const loader = new THREE.TextureLoader();
   const screens = {};
-  for (const [key, name] of Object.entries(IMAGES)) {
-    const tex = loader.load(new URL(`img/screens/${lang}/${name}-${size}.webp`, import.meta.url).href, () => draw());
+  for (const [i, key] of Object.keys(IMAGES).entries()) {
+    const tex = textures[i];
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
     const mesh = new THREE.Mesh(screenGeo, new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false }));
@@ -232,10 +238,9 @@ export async function start(section, off) {
   const toPx = (x, y) => { const p = new THREE.Vector3(x, y, 0).project(camera); return [(p.x + 1) / 2 * w, (1 - p.y) / 2 * h]; };
   const world = (u, v, z) => inner.localToWorld(onScreen(u, v, z));
 
-  let shownStep = -1, progress = 0;
+  let shownStep = -1;
 
   function render(p) {
-    progress = p;
     const s = clamp(p) * STEPS;
 
     // Phone.
@@ -383,8 +388,6 @@ export async function start(section, off) {
     }
   }
 
-  function draw() { render(progress); }
-
   // Scroll driver.
   let target = 0, shown = 0, frame = 0, last = 0, onscreen = true;
   const read = () => {
@@ -399,14 +402,15 @@ export async function start(section, off) {
     render(shown);
     if (shown !== target) schedule();
   };
-  const schedule = () => { if (!frame && onscreen && !document.hidden) frame = requestAnimationFrame(tick); };
+  const schedule = () => { if (!frame && onscreen && !document.hidden && live()) frame = requestAnimationFrame(tick); };
   const onScroll = () => { target = read(); schedule(); };
 
   addEventListener("scroll", onScroll, { passive: true });
   document.addEventListener("visibilitychange", schedule);
-  new IntersectionObserver((entries) => { onscreen = entries[0].isIntersecting; schedule(); }).observe(guide);
-  new ResizeObserver(() => { resize(); onScroll(); draw(); }).observe(stage);
-  matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", (e) => { if (e.matches) off(); });
+  const seen = new IntersectionObserver((entries) => { onscreen = entries[0].isIntersecting; schedule(); });
+  seen.observe(guide);
+  const sized = new ResizeObserver(() => { if (!live()) return; resize(); onScroll(); schedule(); });
+  sized.observe(stage);
 
   marks.forEach((button, i) => button.addEventListener("click", () => {
     const top = guide.getBoundingClientRect().top + scrollY;
@@ -416,5 +420,16 @@ export async function start(section, off) {
   resize();
   shown = target = read();
   render(shown);
-  return { render };
+
+  const stop = () => {
+    cancelAnimationFrame(frame);
+    removeEventListener("scroll", onScroll);
+    document.removeEventListener("visibilitychange", schedule);
+    seen.disconnect();
+    sized.disconnect();
+    canvas.removeEventListener("webglcontextlost", off);
+    renderer.dispose();
+    renderer.forceContextLoss();
+  };
+  return { render, stop };
 }

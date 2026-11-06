@@ -15,7 +15,8 @@
 (function () {
   var section = document.getElementById("how");
   if (!section || !section.querySelector(".guide")) return;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+  var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (motion.matches || !("IntersectionObserver" in window)) return;
   try {
     var gl = document.createElement("canvas").getContext("webgl2");
     if (!gl) return;
@@ -23,13 +24,29 @@
     if (lose) lose.loseContext();
   } catch (e) { return; }
 
+  // The static tape and steps stay until the stage is ready; .guide already holds the rest of the height, so the swap moves nothing.
+  var before = section.querySelector(".tape").previousElementSibling, steps = section.querySelector(".steps");
+  section.style.setProperty("--guide-static", steps.offsetTop + steps.offsetHeight - before.offsetTop - before.offsetHeight + "px");
   section.classList.add("guide-on");
-  var off = function () { section.classList.remove("guide-on"); };
+
+  var stage = null;
+  var off = function () {
+    section.classList.remove("guide-on", "guide-ready");
+    if (stage) stage.stop();
+    stage = null;
+  };
+  motion.addEventListener("change", function (e) { if (e.matches) off(); });
+
   var watch = function () {
     var seen = new IntersectionObserver(function (entries) {
       if (!entries.some(function (e) { return e.isIntersecting; })) return;
       seen.disconnect();
-      import("./guide.js").then(function (m) { return m.start(section, off); }).catch(off);
+      if (!section.classList.contains("guide-on")) return;
+      import("./guide.js").then(function (m) { return m.start(section, off); }).then(function (started) {
+        if (!started) return;
+        stage = started;
+        section.classList.add("guide-ready");
+      }).catch(off);
     }, { rootMargin: "800px 0px" });
     seen.observe(section);
   };
