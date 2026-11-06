@@ -3,28 +3,21 @@
 import * as THREE from "./vendor/three/three.module.min.js";
 
 const STEPS = 6;
-const STOP = 2.72; // The moment the stop button is tapped, in step units.
+const START = .42, STOP = 2.8; // The moments the record and stop buttons are tapped, in step units.
 
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const lerp = (a, b, t) => a + (b - a) * t;
 const ramp = (s, a, b) => clamp((s - a) / (b - a));
 const ease = (s, a, b) => { const t = ramp(s, a, b); return t * t * (3 - 2 * t); };
-const bounce = (t) => {
-  const n = 7.5625, d = 2.75;
-  if (t < 1 / d) return n * t * t;
-  if (t < 2 / d) return n * (t -= 1.5 / d) * t + .75;
-  if (t < 2.5 / d) return n * (t -= 2.25 / d) * t + .9375;
-  return n * (t -= 2.625 / d) * t + .984375;
-};
 
 // Real screens. Positions are fractions of the screen image.
 const IMAGES = { rec: "01-longrecord", pick: "02-successscene", frame: "03-composition", band: "04-recordindicator", look: "05-filter", logo: "06-logoshare", history: "07-storage" };
-const AT = { button: [.4993, .9131], dot: [.436, .093], pill: [.4975, .093], pencil: [.915, .725], thumb: [.266, .8], confirm: [.5, .926], logo: [.503, .854], save: [.495, .929], pinch: [.5, .4] };
-const CUTS = [[.6, .7, "band"], [3.02, 3.22, "pick"], [4.1, 4.35, "frame"], [4.42, 4.52, "look"], [4.68, 4.76, "frame"], [4.82, 4.92, "logo"], [5.5, 5.7, "history"]];
-const TAPS = [[.6, "button"], [STOP, "button"], [4.38, "pencil"], [4.56, "thumb"], [4.66, "confirm"], [4.8, "logo"], [5.06, "save"]];
+const AT = { button: [.4993, .9131], dot: [.44, .093], pill: [.4975, .093], pencil: [.915, .725], thumb: [.266, .8], confirm: [.5, .926], logo: [.503, .854], save: [.495, .929], pinch: [.5, .4] };
+const CUTS = [[START, START + .08, "band"], [3.02, 3.1, "pick"], [4.1, 4.18, "frame"], [4.42, 4.48, "look"], [4.68, 4.74, "frame"], [4.82, 4.88, "logo"], [5.5, 5.58, "history"]];
+const TAPS = [[START, "button"], [STOP, "button"], [4.38, "pencil"], [4.56, "thumb"], [4.66, "confirm"], [4.8, "logo"], [5.06, "save"]];
 
 const PHONE_H = 2.6, PHONE_W = PHONE_H * 1320 / 2868, SCREEN_W = PHONE_W * .952, SCREEN_H = SCREEN_W * 1565 / 720;
-const R_BUTTON = SCREEN_W * .06, R_DOT = SCREEN_W * .024, R_KEN = .21; // The record button's red circle is 54pt of a 450pt wide screen.
+const R_BUTTON = SCREEN_W * .06, R_DOT = SCREEN_W * .019; // The record button's red circle is 54pt of a 450pt wide screen.
 
 function roundedRect(w, h, r) {
   const s = new THREE.Shape(), x = -w / 2, y = -h / 2;
@@ -50,11 +43,11 @@ function layoutFor(width, height) {
   const wide = width >= 900 && aspect >= 1.15;
   if (wide) {
     const V = 4.7, span = V * aspect, home = span * .2;
-    return { wide, V, home, side: home + .7, py: .25, tapeY: -1.35, pickY: -1.68, keep: 1.8, peel: .88, gap: .22, fw: .2, fh: .31, pickW: 3.4, kenX: home - .7 };
+    return { wide, V, home, side: home + .7, py: .25, tapeY: -1.35, pickY: -1.68, keep: 1.8, peel: .88, gap: .22, fw: .2, fh: .31, pickW: 3.4 };
   }
   const V = Math.max(5.4, 2.75 / aspect), hw = V * aspect / 2;
   const py = V * .385 - 1.3;
-  return { wide, V, home: 0, side: hw * .46, py, tapeY: py - 1.58, pickY: py - 1.96, keep: hw * .84, peel: .68, gap: .17, fw: .155, fh: .24, pickW: hw * 1.6, kenX: -hw * .5 };
+  return { wide, V, home: 0, side: hw * .46, py, tapeY: py - 1.58, pickY: py - 1.96, keep: hw * .84, peel: .68, gap: .17, fw: .155, fh: .24, pickW: hw * 1.6 };
 }
 
 export async function start(section, off) {
@@ -112,8 +105,9 @@ export async function start(section, off) {
   }
 
   const onScreen = (u, v, z = .05) => new THREE.Vector3((u - .5) * SCREEN_W, (.5 - v) * SCREEN_H, z);
+  const buttonAt = onScreen(...AT.button, .046), dotAt = onScreen(...AT.dot, .046);
 
-  // Hides the screenshot's stop square until the ball arrives: the ring is empty before recording.
+  // Before recording the button is a red circle in the ring, so the screenshot's stop square stays hidden until the tap.
   const patch = new THREE.Mesh(new THREE.CircleGeometry(SCREEN_W * .05, 24), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, depthWrite: false, toneMapped: false }));
   patch.position.copy(onScreen(...AT.button, .043));
   patch.renderOrder = 3;
@@ -139,7 +133,7 @@ export async function start(section, off) {
     c.beginPath(); c.roundRect(2, 2, 296, 138, 69); c.fill();
     c.fillStyle = "#fff";
     c.beginPath(); c.arc(72, 71, 25, 0, Math.PI * 2); c.arc(72, 71, 11, 0, Math.PI * 2, true); c.fill();
-    c.font = '500 58px -apple-system, "Segoe UI", sans-serif';
+    c.font = '500 54px -apple-system, "Segoe UI", sans-serif';
     c.textBaseline = "middle"; c.textAlign = "right";
     c.fillText(text, 262, 74);
     clockTex.needsUpdate = true;
@@ -165,24 +159,14 @@ export async function start(section, off) {
     c.fillStyle = g; c.fillRect(0, 0, w, w);
   });
   const shadow = () => new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, toneMapped: false }));
-  const phoneShadow = shadow(), kenShadow = shadow();
+  const phoneShadow = shadow();
   phoneShadow.scale.set(1.3, .26, 1);
-  scene.add(phoneShadow, kenShadow);
+  scene.add(phoneShadow);
 
-  // Kendama: neutral body, the ball is the only red.
-  const ken = new THREE.Group();
-  const kenMat = new THREE.MeshStandardMaterial({ color: token("--text-2"), roughness: .55 });
-  const lathe = (points) => new THREE.LatheGeometry(points.map(([r, y]) => new THREE.Vector2(r, y)), 28);
-  ken.add(new THREE.Mesh(lathe([[0, .05], [.13, .02], [.2, 0], [.215, .03], [.17, .12], [.11, .26], [.095, .5], [.095, .86], [.105, .92], [.13, .98], [.13, 1.14], [.1, 1.2], [.09, 1.3], [.075, 1.42], [.05, 1.52], [.02, 1.59], [0, 1.6]]), kenMat));
-  const cross = new THREE.Mesh(lathe([[0, -.38], [.1, -.4], [.19, -.45], [.21, -.43], [.17, -.34], [.115, -.2], [.1, 0], [.115, .2], [.15, .3], [.17, .36], [.15, .4], [.08, .41], [0, .39]]), kenMat);
-  cross.rotation.z = Math.PI / 2;
-  cross.position.y = 1.06;
-  ken.add(cross);
-  ken.rotation.y = .55;
-  scene.add(ken);
-
-  const ball = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 24), new THREE.MeshStandardMaterial({ color: token("--rec"), roughness: .35 }));
-  scene.add(ball);
+  // REC: the record button's red circle moves to the timer as the dot and goes out on stop. The only red on the stage.
+  const rec = new THREE.Mesh(new THREE.CircleGeometry(1, 32), new THREE.MeshBasicMaterial({ color: token("--rec"), transparent: true, depthWrite: false, toneMapped: false }));
+  rec.renderOrder = 5;
+  inner.add(rec);
 
   // Tape: frames cut from the real recording.
   const frameGeo = new THREE.PlaneGeometry(1, 1);
@@ -255,7 +239,7 @@ export async function start(section, off) {
     const s = clamp(p) * STEPS;
 
     // Phone.
-    const away = ease(s, 1, 1.25) * (1 - ease(s, 3.02, 3.4));
+    const away = ease(s, 1, 1.25) * (1 - ease(s, 2.05, 2.4));
     phone.position.set(lerp(L.home, L.side, away), L.py, 0);
     phone.rotation.set(-.04, lerp(lerp(-.2, -.1, ease(s, 1, 1.25)), 0, ease(s, 3.02, 3.4)), 0);
     phone.scale.setScalar(lerp(1, .92, ease(s, 5.6, 5.9)));
@@ -279,50 +263,20 @@ export async function start(section, off) {
       Object.assign(screens[to], { visible: true, renderOrder: 2 });
       screens[to].material.opacity = mix;
     }
-    patch.visible = s < .7;
-    patch.material.opacity = 1 - ease(s, .6, .7);
+    patch.visible = s < START + .08;
+    patch.material.opacity = 1 - ease(s, START, START + .08);
 
     // Clock: past 3 minutes the kept tape stays the same length.
     const clockOn = s < 3.22;
     clock.visible = clockOn;
     clock.material.opacity = 1 - ease(s, 3.02, 3.22);
-    if (clockOn) setClock(s < .6 ? 0 : s < 1 ? lerp(0, 12, ramp(s, .6, 1)) : s < 2 ? lerp(12, 1122, ease(s, 1, 2)) : lerp(1122, 1130, ramp(s, 2, STOP)));
+    if (clockOn) setClock(s < 1 ? lerp(0, 12, ramp(s, START, 1)) : s < 2 ? lerp(12, 1122, ease(s, 1, 2)) : lerp(1122, 1130, ramp(s, 2, STOP)));
 
-    // Kendama.
-    const kenIn = ease(s, 2, 2.3) * (1 - ease(s, 3, 3.3));
-    const kenBase = L.tapeY + .34;
-    ken.visible = kenIn > .001;
-    ken.position.set(L.kenX, kenBase, 0);
-    ken.scale.setScalar(kenIn);
-    kenShadow.visible = ken.visible;
-    kenShadow.position.set(L.kenX, kenBase - .02, -.3);
-    kenShadow.scale.set(.8 * kenIn, .16 * kenIn, 1);
-    const spike = new THREE.Vector3(L.kenX, kenBase + (1.6 + R_KEN * .8) * kenIn, 0);
-
-    // Ball: falls into the record button, becomes the REC dot, then lands on the spike.
-    const button = world(...AT.button, .09), dot = world(...AT.dot, .08);
-    const sky = button.clone().add(new THREE.Vector3(0, 3.6, 1));
-    let r;
-    if (s < .52) {
-      const t = ramp(s, .24, .52);
-      ball.position.lerpVectors(sky, button, bounce(t));
-      r = lerp(R_KEN, R_BUTTON, t);
-    } else if (s < .76) {
-      const t = ease(s, .62, .76);
-      ball.position.lerpVectors(button, dot, t);
-      ball.position.z += Math.sin(t * Math.PI) * .25;
-      r = lerp(R_BUTTON, R_DOT, t);
-    } else if (s < 2.56) {
-      const t = ease(s, 2.3, 2.56);
-      ball.position.lerpVectors(dot, spike, t);
-      ball.position.y += Math.sin(t * Math.PI) * .7;
-      r = lerp(R_DOT, R_KEN, t);
-    } else {
-      ball.position.copy(spike);
-      r = R_KEN * kenIn;
-    }
-    ball.visible = s >= .24 && r > .002;
-    ball.scale.setScalar(Math.max(r, .001));
+    // REC.
+    const moved = ease(s, START + .02, START + .16);
+    rec.position.lerpVectors(buttonAt, dotAt, moved);
+    rec.scale.setScalar(Math.max(lerp(R_BUTTON, R_DOT, moved) * (1 - ease(s, STOP, STOP + .08)), .001));
+    rec.visible = s < STOP + .08;
 
     // Tape.
     const flow = (Math.min(s, STOP) - Math.min(s, 1)) * 2.6 * (L.keep + L.peel) / 1.8;

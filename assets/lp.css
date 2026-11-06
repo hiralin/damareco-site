@@ -229,8 +229,9 @@ p { margin: 0; }
 .guide-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 .guide-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .guide-frame.finder { position: absolute; inset: 8px; pointer-events: none; }
-.guide-marks { position: absolute; top: 24px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; }
-.guide-marks button { width: 34px; height: 34px; padding: 0; border: 2px solid var(--text); border-radius: 8px; background: transparent; color: var(--text); font: 600 14px/1 var(--font); font-variant-numeric: tabular-nums; cursor: pointer; }
+.guide-marks { position: absolute; top: 24px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; }
+.guide-marks button { position: relative; width: 34px; height: 34px; padding: 0; border: 2px solid var(--text); border-radius: 8px; background: transparent; color: var(--text); font: 600 14px/1 var(--font); font-variant-numeric: tabular-nums; cursor: pointer; }
+.guide-marks button::after { content: ""; position: absolute; inset: -5px; }
 .guide-marks button[aria-current="step"] { background: var(--active); border-color: var(--active); color: var(--ink); }
 .guide-marks button:focus-visible { outline: 3px solid #0A6CF0; outline-offset: 2px; }
 .guide-steps { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 28px; display: grid; margin: 0; padding: 0; list-style: none; }
