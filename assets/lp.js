@@ -25,10 +25,15 @@
 
   section.classList.add("guide-on");
   var off = function () { section.classList.remove("guide-on"); };
-  var seen = new IntersectionObserver(function (entries) {
-    if (!entries.some(function (e) { return e.isIntersecting; })) return;
-    seen.disconnect();
-    import("./guide.js").then(function (m) { m.start(section, off); }).catch(off);
-  }, { rootMargin: "800px 0px" });
-  seen.observe(section);
+  var watch = function () {
+    var seen = new IntersectionObserver(function (entries) {
+      if (!entries.some(function (e) { return e.isIntersecting; })) return;
+      seen.disconnect();
+      import("./guide.js").then(function (m) { return m.start(section, off); }).catch(off);
+    }, { rootMargin: "800px 0px" });
+    seen.observe(section);
+  };
+  // three.js waits for the first scroll, so it never competes with the hero's LCP and stays unloaded for anyone who doesn't scroll.
+  if (window.scrollY > 0) watch();
+  else window.addEventListener("scroll", watch, { once: true, passive: true });
 })();
