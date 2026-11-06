@@ -246,7 +246,7 @@ p { margin: 0; }
 .guide-labels span { position: absolute; top: 0; left: 0; }
 .guide-labels .older { text-align: right; }
 .guide-labels .keep { color: var(--text); font-weight: 600; text-align: center; border-top: 2px solid var(--text); padding-top: 6px; }
-@media (min-width: 900px) and (min-aspect-ratio: 115/100) {
+@media (min-width: 900px) and (min-aspect-ratio: 95/100) {
   .guide-marks { top: calc(50% - 130px); left: max(var(--gutter), calc(50vw - var(--max) / 2 + var(--gutter))); right: auto; justify-content: flex-start; }
   .guide-steps { top: calc(50% - 80px); bottom: auto; right: auto; left: max(var(--gutter), calc(50vw - var(--max) / 2 + var(--gutter))); width: min(34vw, 380px); }
   .guide-steps li { align-self: start; }
@@ -262,4 +262,56 @@ p { margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   .rec .dot, .tape-frames, .tape-now::before, .tape-trim, .tape-pick span { animation: none; }
+}
+
+/* PC: from 1200px the page uses the window instead of showing the phone column larger. Narrower windows keep the rules above. */
+@media (min-width: 1200px) {
+  :root { --max: clamp(1120px, 88vw, 1720px); --gutter: 48px; }
+  body { font-size: 18px; }
+
+  /* The hero fills the first screen */
+  .hero { padding-top: 0; }
+  .hero .finder { display: grid; align-items: center; min-height: calc(100vh - 84px); min-height: calc(100svh - 84px); padding: 32px clamp(48px, 4vw, 96px); }
+  .hero-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; }
+  /* 9em is the widest line ("できたところだけ、") and must fit the left column */
+  .hero h1 { font-size: clamp(50px, calc(4.8vw - 8px), 84px); }
+  .lead { font-size: clamp(19px, 1.35vw, 23px); max-width: 28em; }
+  .phones { width: min(100%, calc((100vh - 170px) / 1.36)); width: min(100%, calc((100svh - 170px) / 1.36)); }
+  .phones .phone { width: 56%; }
+
+  .section { padding-block: clamp(96px, 13vh, 168px); }
+  .section h2 { font-size: clamp(44px, 3.5vw, 64px); }
+
+  /* Section heads: the heading on the left, the explanation on the right */
+  #how > .wrap { display: grid; grid-template-columns: 1fr 1fr; column-gap: 72px; }
+  #how > .wrap > * { grid-column: 1 / -1; }
+  #how > .wrap > h2 { grid-column: 1; }
+  #how > .wrap > .section-lead { grid-column: 2; align-self: end; margin-top: 0; }
+
+  .feature { gap: 96px; }
+  .feature .phone { width: min(72%, calc(80vh * 1320 / 2868)); width: min(72%, calc(80svh * 1320 / 2868)); }
+
+  .trio { gap: 64px; }
+  .trio .phone { width: min(84%, calc(76vh * 1320 / 2868)); width: min(84%, calc(76svh * 1320 / 2868)); }
+  .trio h3 { font-size: 24px; }
+  .trio p { font-size: 17px; }
+
+  /* 378px of phone shows the largest screenshot (720px wide) at 2x */
+  .feature .phone, .trio .phone { max-width: 378px; }
+
+  .specs { grid-template-columns: repeat(3, 1fr); gap: 0 56px; margin-top: 56px; }
+
+  /* FAQ: the heading stays beside the answers */
+  #faq > .wrap { display: grid; grid-template-columns: 5fr 7fr; grid-template-rows: auto 1fr; column-gap: 72px; }
+  #faq .eyebrow, #faq h2 { grid-column: 1; }
+  #faq h2 { font-size: clamp(36px, 2.8vw, 52px); }
+  #faq .faq { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
+
+  .closing .finder { padding-block: 112px; }
+  .closing h2 { font-size: clamp(40px, 3.5vw, 64px); }
+}
+@media (min-width: 1200px) and (min-aspect-ratio: 95/100) {
+  .guide-steps { width: min(34vw, 480px); }
+  .guide-steps h3 { font-size: 32px; }
+  .guide-steps p { font-size: 18px; }
 }

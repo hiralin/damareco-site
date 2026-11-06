@@ -40,10 +40,11 @@ function canvasTexture(w, h, draw) {
 
 function layoutFor(width, height) {
   const aspect = width / height;
-  const wide = width >= 900 && aspect >= 1.15;
+  // Same condition as the @media (min-aspect-ratio) rules in lp.css.
+  const wide = width >= 900 && aspect >= .95;
   if (wide) {
     const V = 4.7, span = V * aspect, home = span * .2;
-    return { wide, V, home, side: home + .7, py: .25, tapeY: -1.35, pickY: -1.68, keep: 1.8, peel: .88, gap: .22, fw: .2, fh: .31, pickW: 3.4 };
+    return { wide, V, home, side: Math.min(home + .7, span / 2 - .75), py: .25, tapeY: -1.35, pickY: -1.68, keep: 1.8, peel: .88, gap: .22, fw: .2, fh: .31, pickW: Math.min(3.4, span * .6 - .5) };
   }
   const V = Math.max(5.4, 2.75 / aspect), hw = V * aspect / 2;
   const py = V * .385 - 1.3;
