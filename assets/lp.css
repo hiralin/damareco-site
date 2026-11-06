@@ -269,9 +269,9 @@ p { margin: 0; }
   :root { --max: clamp(1120px, 88vw, 1720px); --gutter: 48px; }
   body { font-size: 18px; }
 
-  /* The hero fills the first screen */
+  /* The hero fills the first screen; 64vw stops it stretching on a portrait monitor */
   .hero { padding-top: 0; }
-  .hero .finder { display: grid; align-items: center; min-height: calc(100vh - 84px); min-height: calc(100svh - 84px); padding: 32px clamp(48px, 4vw, 96px); }
+  .hero .finder { display: grid; align-items: center; min-height: min(calc(100vh - 84px), 64vw); min-height: min(calc(100svh - 84px), 64vw); padding: 32px clamp(48px, 4vw, 96px); }
   .hero-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; }
   /* 9em is the widest line ("できたところだけ、") and must fit the left column */
   .hero h1 { font-size: clamp(50px, calc(4.8vw - 8px), 84px); }
