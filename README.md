@@ -8,6 +8,7 @@
 | `en/index.html` | LP（英語） |
 | `support.html` / `privacy.html` | サポート、プライバシーポリシー（アプリとApp Storeからリンク） |
 | `assets/lp.css`, `assets/lp.js` | LPの見た目と、ヒーローのRECの時計 |
+| `assets/guide.js`, `assets/vendor/three/` | しくみの節の3Dの案内（three.js）。WebGLやreduced-motionの条件を満たさないときは、HTMLの図と手順のまま |
 | `assets/img/screens/{ja,en}/` | アプリの実画面（6.0.0のApp Store画像と同じキャプチャ）。360px・720pxのWebP |
 | `assets/img/og-{ja,en}.jpg` | SNSで共有したときの画像（1200×630） |
 | `CNAME` | 独自ドメイン。消すと公開先が外れます |

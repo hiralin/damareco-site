@@ -222,6 +222,38 @@ p { margin: 0; }
 .closing .cta { justify-content: center; }
 
 /* Footer */
+/* How it works, three.js guide. assets/lp.js sets .guide-on to reserve the height and .guide-ready once the stage can replace .tape and .steps. */
+.guide { display: none; }
+#how.guide-ready .tape, #how.guide-ready .steps { display: none; }
+#how.guide-on .guide { display: block; width: 100vw; height: calc(640vh - var(--guide-static, 0px)); height: calc(640svh - var(--guide-static, 0px)); margin: 24px calc(50% - 50vw) 0; }
+#how.guide-ready .guide { height: 640vh; height: 640svh; }
+#how:not(.guide-ready) .guide-stage { visibility: hidden; }
+.guide-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.guide-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.guide-frame.finder { position: absolute; inset: 8px; pointer-events: none; }
+.guide-marks { position: absolute; top: 24px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; }
+.guide-marks button { position: relative; width: 34px; height: 34px; padding: 0; border: 2px solid var(--text); border-radius: 8px; background: transparent; color: var(--text); font: 600 14px/1 var(--font); font-variant-numeric: tabular-nums; cursor: pointer; }
+.guide-marks button::after { content: ""; position: absolute; inset: -5px; }
+.guide-marks button[aria-current="step"] { background: var(--active); border-color: var(--active); color: var(--ink); }
+.guide-marks button:focus-visible { outline: 3px solid #0A6CF0; outline-offset: 2px; }
+.guide-steps { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 28px; display: grid; margin: 0; padding: 0; list-style: none; }
+.guide-steps li { grid-area: 1 / 1; align-self: end; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.guide-steps li.is-active { opacity: 1; pointer-events: auto; }
+.guide-steps h3 { font-size: 21px; line-height: 1.4; margin-bottom: 4px; }
+.guide-steps p { color: var(--text-2); font-size: 15px; line-height: 1.7; }
+.guide-steps .badge { margin-top: 12px; }
+.guide-labels { position: absolute; inset: 0; pointer-events: none; font-size: 13px; line-height: 1.5; color: var(--text-2); }
+.guide-labels span { position: absolute; top: 0; left: 0; }
+.guide-labels .older { text-align: right; }
+.guide-labels .keep { color: var(--text); font-weight: 600; text-align: center; border-top: 2px solid var(--text); padding-top: 6px; }
+@media (min-width: 900px) and (min-aspect-ratio: 115/100) {
+  .guide-marks { top: calc(50% - 130px); left: max(var(--gutter), calc(50vw - var(--max) / 2 + var(--gutter))); right: auto; justify-content: flex-start; }
+  .guide-steps { top: calc(50% - 80px); bottom: auto; right: auto; left: max(var(--gutter), calc(50vw - var(--max) / 2 + var(--gutter))); width: min(34vw, 380px); }
+  .guide-steps li { align-self: start; }
+  .guide-steps h3 { font-size: 26px; }
+  .guide-steps p { font-size: 16px; }
+}
+
 .site-footer { border-top: 1px solid var(--line); padding-block: 32px 48px; font-size: 13px; color: var(--text-2); }
 .site-footer .wrap { display: grid; gap: 14px; }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
