@@ -90,7 +90,7 @@ p { margin: 0; }
 .hero .finder { padding: clamp(28px, 6vw, 64px) clamp(20px, 5vw, 64px); }
 .hero-grid { display: grid; gap: 40px; align-items: center; }
 @media (min-width: 900px) { .hero-grid { grid-template-columns: 1.2fr .8fr; gap: 24px; } }
-/* Sized so "できたところだけ、" always fits on one line of its column */
+/* Sized so a 9em line (the widest headline so far) always fits on one line of its column */
 .hero h1 { font-size: clamp(28px, 8.6vw, 44px); line-height: 1.22; margin: 14px 0 22px; }
 @media (min-width: 600px) { .hero h1 { font-size: clamp(44px, 7vw, 60px); } }
 @media (min-width: 900px) { .hero h1 { font-size: clamp(40px, 4.4vw + 4px, 58px); } }
@@ -273,7 +273,7 @@ p { margin: 0; }
   .hero { padding-top: 0; }
   .hero .finder { display: grid; align-items: center; min-height: min(calc(100vh - 84px), 64vw); min-height: min(calc(100svh - 84px), 64vw); padding: 32px clamp(48px, 4vw, 96px); }
   .hero-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; }
-  /* 9em is the widest line ("できたところだけ、") and must fit the left column */
+  /* 9em is the widest headline line so far and must fit the left column */
   .hero h1 { font-size: clamp(50px, calc(4.8vw - 8px), 84px); }
   .lead { font-size: clamp(19px, 1.35vw, 23px); max-width: 28em; }
   .phones { width: min(100%, calc((100vh - 170px) / 1.36)); width: min(100%, calc((100svh - 170px) / 1.36)); }
